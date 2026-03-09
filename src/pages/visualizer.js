@@ -55,7 +55,7 @@ export function renderVisualizerPage() {
                     <div class="editor-area">
                                     <div class="line-gutter" id="line-gutter"></div>
                                     <div id="monaco-editor" style="flex:1;height:100%;width:100%"></div>
-                                    <textarea class="code-input" id="code-input" spellcheck="false" placeholder="// Write or paste code here..." style="display:none"></textarea>
+                                                            <textarea class="code-input" id="code-input" spellcheck="false" placeholder="// Write or paste code here..."></textarea>
                                 </div>
 
                 <div class="output-panel">
@@ -131,6 +131,10 @@ export function initVisualizer() {
                             monacoEditor = monaco.editor.create(document.getElementById('monaco-editor'), { value: codeInput.value || '', language: 'cpp', theme: 'vs-dark', automaticLayout: true });
                             window.monacoEditor = monacoEditor;
                             monacoEditor.getModel().onDidChangeContent(() => onCodeChange());
+                            // hide the textarea fallback when Monaco is active
+                            try { codeInput.style.display = 'none'; } catch (e) {}
+                            // focus editor for immediate typing experience
+                            try { monacoEditor.focus(); } catch (e) {}
                             resolve(monacoEditor);
                         } catch (e) { console.warn('monaco create failed', e); resolve(null); }
                     });
@@ -143,6 +147,24 @@ export function initVisualizer() {
 
     function getCode() { return (monacoEditor && monacoEditor.getValue) ? monacoEditor.getValue() : codeInput.value; }
     function setCode(v) { if (monacoEditor && monacoEditor.setValue) monacoEditor.setValue(v); else codeInput.value = v; }
+
+    // ── Pyodide (in-browser Python) loader for realtime execution ─────────────────
+    async function ensurePyodide() {
+        if (window.pyodide) return window.pyodide;
+        return new Promise((resolve) => {
+            const s = document.createElement('script');
+            s.src = 'https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js';
+            s.onload = async () => {
+                try {
+                    // eslint-disable-next-line no-undef
+                    window.pyodide = await loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.23.4/full/' });
+                    resolve(window.pyodide);
+                } catch (e) { console.warn('pyodide init failed', e); resolve(null); }
+            };
+            s.onerror = () => resolve(null);
+            document.head.appendChild(s);
+        });
+    }
 
     function updateGutter(errorLines) {
         const lines = (getCode() || '').split('\n');
@@ -193,7 +215,7 @@ export function initVisualizer() {
         });
     }
 
-    function compile() {
+    async function compile() {
         const code = getCode() || '';
         clearOutput();
         if (!code.trim()) {
@@ -242,21 +264,8 @@ export function initVisualizer() {
         outputBadge.textContent = 'OK';
         appendOutput('<span class="out-ok">✓ Build succeeded — 0 errors</span>');
 
-        captureOutputLines(code, lang);
-        const explanation = generateExplanation(state, prevState);
-        if (explanation) appendOutput(`<span class="out-info">${explanation}</span>`);
-        if (state.steps && state.steps.length) appendOutput(`<span class="out-prompt">▸</span> ${state.steps.length} operation${state.steps.length>1?'s':''} traced`, 'out-info');
-
-        const html = renderState(state);
-        vizScroll.innerHTML = html || `<div class="empty-state"><div class="es-icon">◈</div><div class="es-txt">No data structures detected</div></div>`;
-        prevState = state;
-        // store steps for playback and enable play button
-        lastSteps = state.steps || [];
-        if (playBtn) playBtn.disabled = !(lastSteps && lastSteps.length > 0);
-    }
-
         // Additional semantic checks for C-style linked list: require a Node struct/class definition
-        if (state.linkedLists.length > 0 && (lang === 'cpp')) {
+        if (state.linkedLists && state.linkedLists.length > 0 && (lang === 'cpp')) {
             const hasNodeDef = /struct\s+Node\b|class\s+Node\b|typedef\s+struct\s+Node\b|new\s+Node\(|Node\s*\*/.test(code);
             if (!hasNodeDef) {
                 appendOutput(`<span class="out-err">Error: linked list detected but no Node struct/class found in source. Please define a <code>struct Node</code> (or class) before running.</span>`, 'out-err');
@@ -273,7 +282,7 @@ export function initVisualizer() {
 
         // Detect infinite loop pattern and require interactive choice
         const hasInfiniteLoop = /while\s*\(\s*(1|true)\s*\)/i.test(code);
-        if (hasInfiniteLoop && state.linkedLists.length > 0) {
+        if (hasInfiniteLoop && state.linkedLists && state.linkedLists.length > 0) {
             // render current state and then prompt user for operation
             vizScroll.innerHTML = renderState(state) || vizScroll.innerHTML;
             awaitUserOperation().then(op => {
@@ -282,6 +291,48 @@ export function initVisualizer() {
             prevState = state;
             return;
         }
+
+        // If Python, try to execute in-browser via Pyodide and capture real stdout/stderr.
+        if (lang === 'python') {
+            appendOutput('<span class="out-info">Running with Pyodide (in-browser)...</span>');
+            const py = await ensurePyodide();
+            if (py) {
+                try {
+                    // redirect stdout/stderr to StringIO, run code, then restore
+                    await py.runPythonAsync(`import sys, io\n_stdout = sys.stdout\n_stderr = sys.stderr\nsys.stdout = io.StringIO()\nsys.stderr = io.StringIO()`);
+                    await py.runPythonAsync(code);
+                    const out = py.runPython('sys.stdout.getvalue()');
+                    const err = py.runPython('sys.stderr.getvalue()');
+                    await py.runPythonAsync('sys.stdout = _stdout\nsys.stderr = _stderr');
+                    if (out) out.split('\n').forEach(l => { if (l !== '') appendOutput(`<span class="out-stdout">[stdout] ${escHtml(l)}</span>`); });
+                    if (err) err.split('\n').forEach(l => { if (l !== '') appendOutput(`<span class="out-stderr">[stderr] ${escHtml(l)}</span>`); });
+                } catch (e) {
+                    appendOutput(`<span class="out-err">Runtime error: ${escHtml(String(e))}</span>`, 'out-err');
+                }
+            } else {
+                appendOutput('<span class="out-err">Pyodide failed to load — cannot execute Python in-browser.</span>', 'out-err');
+            }
+        } else {
+            // heuristically capture print/cout/console.log for non-executed languages
+            captureOutputLines(code, lang);
+        }
+        const explanation = generateExplanation(state, prevState);
+        if (explanation) appendOutput(`<span class="out-info">${explanation}</span>`);
+        if (state.steps && state.steps.length) appendOutput(`<span class="out-prompt">▸</span> ${state.steps.length} operation${state.steps.length>1?'s':''} traced`, 'out-info');
+
+        const html = renderState(state);
+        vizScroll.innerHTML = html || `<div class="empty-state"><div class="es-icon">◈</div><div class="es-txt">No data structures detected</div></div>`;
+        prevState = state;
+        // store steps for playback and enable play button
+        lastSteps = state.steps || [];
+        if (playBtn) playBtn.disabled = !(lastSteps && lastSteps.length > 0);
+        // Auto-play traced steps for a fully automatic experience (no clicks)
+        if (lastSteps && lastSteps.length) {
+            // don't await — let animations run
+            playSteps(lastSteps).catch(e => console.warn('autoplay steps failed', e));
+        }
+    }
+
 
     function onCodeChange() {
         if (debounceTimer) clearTimeout(debounceTimer);
@@ -305,8 +356,13 @@ export function initVisualizer() {
     langSelect.addEventListener('change', () => {
         if (activeSample && SAMPLES[langSelect.value] && SAMPLES[langSelect.value][activeSample]) {
             codeInput.value = SAMPLES[langSelect.value][activeSample];
+            // if Monaco is active sync its value too
+            if (monacoEditor && monacoEditor.setValue) monacoEditor.setValue(codeInput.value);
             compile();
         } else if (codeInput.value.trim()) {
+            if (monacoEditor && monacoEditor.getModel) {
+                try { monaco.editor.setModelLanguage(monacoEditor.getModel(), { cpp: 'cpp', python: 'python', java: 'java', javascript: 'javascript', csharp: 'csharp' }[langSelect.value] || 'cpp'); } catch (e) {}
+            }
             compile();
         }
     });
@@ -351,6 +407,9 @@ export function initVisualizer() {
             playBtn.disabled = true;
             playSteps(lastSteps).finally(() => { if (playBtn) playBtn.disabled = false; });
         });
+
+    // initial compile to populate visualization immediately (keep Run button visible for IDE feel)
+    setTimeout(() => { try { compile(); } catch (e) { console.warn('initial compile failed', e); } }, 80);
 }
 
     // ── Interactive modal / animations helpers ─────────────────
