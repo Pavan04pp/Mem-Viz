@@ -112,16 +112,16 @@ function renderLinkedList(ll) {
         cur = cur.next ? ll.nodes.find(n => n.id === cur.next) : null;
     }
     ll.nodes.forEach(n => { if (!visited.has(n.id)) ordered.push(n); });
-    return `<div class="ll-row">
-    ${ordered.map((node, i) => {
-        const hasNext = node.next && ll.nodes.find(n => n.id === node.next);
-        return `<div class="ll-node">
-        <div class="ll-val">${esc(String(node.val))}</div>
-        <div class="ll-ptr">${hasNext ? '→next' : 'NULL'}</div>
-      </div>${i < ordered.length - 1 ? '<div class="ll-arrow">→</div>' : ''}`;
-    }).join('')}
-    <div class="ll-null">→ NULL</div>
-  </div>`;
+        return `<div class="ll-row">
+        ${ordered.map((node, i) => {
+                const hasNext = node.next && ll.nodes.find(n => n.id === node.next);
+                return `<div class="ll-node" data-node-id="${esc(node.id)}">
+                <div class="ll-val">${esc(String(node.val))}</div>
+                <div class="ll-ptr">${hasNext ? '→next' : 'NULL'}</div>
+            </div>${i < ordered.length - 1 ? '<div class="ll-arrow">→</div>' : ''}`;
+        }).join('')}
+        <div class="ll-null">→ NULL</div>
+    </div>`;
 }
 
 // ── Doubly Linked List ──
@@ -136,17 +136,17 @@ function renderDoublyLinkedList(dll) {
         cur = cur.next ? dll.nodes.find(n => n.id === cur.next) : null;
     }
     dll.nodes.forEach(n => { if (!visited.has(n.id)) ordered.push(n); });
-    return `<div class="ll-row">
-    <div class="ll-null">NULL ←</div>
-    ${ordered.map((node, i) => {
-        return `<div class="dll-node">
-        <div class="dll-prev">←</div>
-        <div class="dll-val">${esc(String(node.val))}</div>
-        <div class="dll-next">→</div>
-      </div>${i < ordered.length - 1 ? '<div class="dll-arrow">⇄</div>' : ''}`;
-    }).join('')}
-    <div class="ll-null">→ NULL</div>
-  </div>`;
+        return `<div class="ll-row">
+        <div class="ll-null">NULL ←</div>
+        ${ordered.map((node, i) => {
+                return `<div class="dll-node" data-node-id="${esc(node.id)}">
+                <div class="dll-prev">←</div>
+                <div class="dll-val">${esc(String(node.val))}</div>
+                <div class="dll-next">→</div>
+            </div>${i < ordered.length - 1 ? '<div class="dll-arrow">⇄</div>' : ''}`;
+        }).join('')}
+        <div class="ll-null">→ NULL</div>
+    </div>`;
 }
 
 // ── Stack DS ──
@@ -202,8 +202,10 @@ function renderTree(tree) {
     });
     tree.nodes.forEach(n => {
         if (!pos[n.id]) return;
-        svg += `<circle class="tn" cx="${cx(n.id)}" cy="${cy(n.id)}" r="${r}"/>`;
+        svg += `<g data-node-id="${esc(n.id)}">`;
+        svg += `<circle class="tn" cx="${cx(n.id)}" cy="${cy(n.id)}" r="${r}" data-node-id="${esc(n.id)}"/>`;
         svg += `<text class="tn-lbl" x="${cx(n.id)}" y="${cy(n.id)}">${esc(String(n.val))}</text>`;
+        svg += `</g>`;
     });
     return svg + `</svg></div>`;
 }
@@ -231,8 +233,10 @@ function renderGraph(g) {
     g.nodes.forEach(node => {
         const p = nodePos[String(node.id)];
         if (!p) return;
-        svg += `<circle class="gn" cx="${p.x}" cy="${p.y}" r="22"/>`;
+        svg += `<g data-node-id="${esc(node.id)}">`;
+        svg += `<circle class="gn" cx="${p.x}" cy="${p.y}" r="22" data-node-id="${esc(node.id)}"/>`;
         svg += `<text class="gn-lbl" x="${p.x}" y="${p.y}">${esc(String(node.label || node.id))}</text>`;
+        svg += `</g>`;
     });
     return svg + `</svg></div>`;
 }

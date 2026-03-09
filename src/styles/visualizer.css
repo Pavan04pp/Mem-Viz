@@ -430,6 +430,8 @@
 .vc-val  { font-family: 'Fira Code', monospace; font-size: 19px; font-weight: 700; color: white; margin-bottom: 6px; word-break: break-all; }
 .vc-addr { font-family: 'Fira Code', monospace; font-size: 9px; color: var(--text-muted); }
 
+.vcard.highlight { box-shadow: 0 10px 30px rgba(99,102,241,0.22); transform: translateY(-4px); transition: transform 0.2s, box-shadow 0.2s; }
+
 .ptr-card { background: var(--ptr-bg); border: 1px solid var(--ptr-border); border-radius: 9px; padding: 10px 13px; min-width: 140px; animation: cardIn 0.3s var(--ease-out); }
 .ptr-target { display: inline-flex; align-items: center; gap: 4px; font-family: 'Fira Code', monospace; font-size: 11px; color: var(--orange); margin-top: 4px; }
 
@@ -520,4 +522,20 @@ line.trie-e { stroke: rgba(56,189,248,0.3); stroke-width: 1.5; }
   .ide-left { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.04); }
   .ide-toolbar { flex-wrap: wrap; height: auto; padding: 6px 10px; }
   .samples-bar { flex-wrap: wrap; height: auto; padding: 6px 10px; }
+}
+
+/* ── Linked list animation helpers (simple visual highlights) */
+.ll-node.inserting { animation: llInsert 0.9s ease forwards; transform-origin: left center; }
+.ll-node.deleting { animation: llDelete 0.7s ease forwards; opacity: 0; transform: translateY(-6px) scale(0.96); }
+.ll-node.highlight { box-shadow: 0 8px 32px rgba(99,102,241,0.28); transform: scale(1.04); transition: transform 0.25s, box-shadow 0.25s; }
+.ll-node.swapping { transition: transform 0.9s; transform: rotateX(8deg); }
+
+@keyframes llInsert {
+  0% { opacity: 0; transform: translateX(-18px) scale(0.94); }
+  60% { opacity: 1; transform: translateX(6px) scale(1.02); }
+  100% { opacity: 1; transform: translateX(0) scale(1); }
+}
+@keyframes llDelete {
+  0% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-14px) scale(0.9); }
 }
