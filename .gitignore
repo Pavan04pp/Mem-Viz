@@ -1,0 +1,35 @@
+# Node & environment
+node_modules/
+.env
+.env.local
+
+# Build / output
+dist/
+build/
+
+# Python
+__pycache__/
+*.pyc
+
+# Editor/OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.log
+.cache/
+
+# Local binaries
+.local/bin/
+
+# Misc
+coverage/
+npm-debug.log*
+.pnpm-debug.log*
+yarn-debug.log*
+.yarn-integrity
+
+# Ignore the default python http server ephemeral files
+*.pid
