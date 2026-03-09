@@ -1,0 +1,298 @@
+/* ═══════════════════════════════════════════════════════════
+   MemViz — Design System & Global Styles
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── RESET ─────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  /* Core palette */
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+  --bg-card: #1e293b;
+  --bg-elevated: #273548;
+
+  /* Accent colors */
+  --accent: #6366f1;
+  --accent-glow: rgba(99, 102, 241, 0.4);
+  --accent2: #8b5cf6;
+  --blue: #38bdf8;
+  --green: #2ee8a0;
+  --green-dim: rgba(46, 232, 160, 0.15);
+  --cyan: #38d4f5;
+  --orange: #ff6b35;
+  --yellow: #f5c542;
+  --red: #ff4466;
+  --purple: #9f6eff;
+  --pink: #ec4899;
+
+  /* Text */
+  --text-primary: #eef0ff;
+  --text-secondary: #94a3b8;
+  --text-muted: #4d5570;
+  --text-dim: #2a3050;
+
+  /* Type-specific colors */
+  --int-bg: #0d1f3a; --int-border: rgba(99,102,241,0.55);
+  --float-bg: #0d2235; --float-border: rgba(56,212,245,0.55);
+  --bool-bg: #1a1a0a; --bool-border: rgba(245,197,66,0.55);
+  --str-bg: #0d2418; --str-border: rgba(46,232,160,0.55);
+  --ptr-bg: #2a1208; --ptr-border: rgba(255,107,53,0.55);
+  --char-bg: #1a0d28; --char-border: rgba(159,110,255,0.55);
+  --auto-bg: #111828; --auto-border: rgba(100,100,180,0.55);
+
+  /* Borders & Surfaces */
+  --border-subtle: rgba(255,255,255,0.06);
+  --border-accent: rgba(99,102,241,0.25);
+  --glass: rgba(30, 41, 59, 0.8);
+  --glass-border: rgba(255,255,255,0.08);
+
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.4);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.5);
+  --shadow-glow: 0 0 30px rgba(99,102,241,0.15);
+
+  /* Spacing */
+  --nav-height: 56px;
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+
+  /* Transitions */
+  --ease-out: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── TYPOGRAPHY ────────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+code, pre, .mono {
+  font-family: 'Fira Code', 'Cascadia Code', monospace;
+}
+
+a {
+  color: var(--blue);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+a:hover { color: var(--accent); }
+
+/* ── SCROLLBAR ─────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--bg-tertiary); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* ── NAVBAR ────────────────────────────────────────────── */
+.navbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  height: var(--nav-height);
+  display: flex; align-items: center; gap: 0;
+  padding: 0 24px;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.nav-logo {
+  display: flex; align-items: center; gap: 10px;
+  cursor: pointer; text-decoration: none;
+}
+.nav-logo-icon {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: linear-gradient(135deg, var(--accent), var(--purple));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; color: white;
+  box-shadow: 0 0 20px rgba(99,102,241,0.3);
+}
+.nav-logo-text {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 15px; font-weight: 900;
+  letter-spacing: 0.12em;
+  background: linear-gradient(90deg, var(--accent), var(--blue));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.nav-sep {
+  width: 1px; height: 28px;
+  background: var(--border-subtle);
+  margin: 0 18px;
+}
+
+.nav-links {
+  display: flex; gap: 4px;
+}
+.nav-link {
+  font-size: 13px; font-weight: 500;
+  padding: 7px 16px; border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  cursor: pointer; border: none; background: none;
+  transition: all 0.2s var(--ease-smooth);
+  text-decoration: none;
+}
+.nav-link:hover { color: var(--text-primary); background: rgba(255,255,255,0.05); }
+.nav-link.active {
+  color: white;
+  background: rgba(99,102,241,0.15);
+  box-shadow: 0 0 12px rgba(99,102,241,0.1);
+}
+
+.nav-right {
+  margin-left: auto;
+  display: flex; align-items: center; gap: 12px;
+}
+
+.theme-toggle {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--glass-border);
+  background: rgba(255,255,255,0.05);
+  color: var(--yellow);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.3s;
+}
+.theme-toggle:hover {
+  background: rgba(255,255,255,0.1);
+  transform: rotate(15deg);
+}
+
+.nav-cta {
+  font-size: 12px; font-weight: 600;
+  padding: 8px 18px; border-radius: 20px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: white; border: none; cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 0 20px rgba(99,102,241,0.25);
+}
+.nav-cta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 30px rgba(99,102,241,0.4);
+}
+
+/* ── MAIN CONTENT ──────────────────────────────────────── */
+#app { padding-top: var(--nav-height); min-height: 100vh; }
+
+.page { animation: pageIn 0.4s var(--ease-smooth); }
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ── BADGES & PILLS ────────────────────────────────────── */
+.badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-family: 'Fira Code', monospace;
+  font-size: 10px; font-weight: 600;
+  letter-spacing: 0.08em;
+  padding: 3px 10px; border-radius: 20px;
+}
+
+.live-badge {
+  color: var(--green);
+  background: rgba(46,232,160,0.08);
+  border: 1px solid rgba(46,232,160,0.2);
+}
+.live-badge::before {
+  content: '';
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 8px var(--green);
+  animation: pulse 1.6s ease infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.7); }
+}
+
+/* ── FOOTER ────────────────────────────────────────────── */
+.footer {
+  padding: 32px 24px;
+  text-align: center;
+  border-top: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  font-size: 13px;
+}
+.footer a { color: var(--text-secondary); }
+.footer a:hover { color: var(--accent); }
+
+/* ── UTILITY ───────────────────────────────────────────── */
+.glass-card {
+  background: var(--glass);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+}
+
+/* ── ANIMATION KEYFRAMES ───────────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-3px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes cardIn {
+  from { opacity: 0; transform: scale(0.5) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 15px var(--accent-glow); }
+  50% { box-shadow: 0 0 30px var(--accent-glow), 0 0 60px rgba(99,102,241,0.1); }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes nodeIn {
+  from { r: 0; opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes sdsSlide {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes flashCard {
+  0%, 100% { filter: brightness(1); }
+  40% { filter: brightness(2.2); }
+}
+@keyframes typing {
+  from { width: 0; }
+  to { width: 100%; }
+}
+@keyframes blink {
+  50% { border-color: transparent; }
+}

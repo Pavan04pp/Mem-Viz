@@ -1,0 +1,191 @@
+/* ═══════════════════════════════════════════════════════════
+   MemViz — Explorer Page Styles
+   ═══════════════════════════════════════════════════════════ */
+
+.explorer-page {
+    padding: 40px 24px 80px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.explorer-page h1 {
+    font-size: 32px;
+    margin-bottom: 8px;
+}
+
+.explorer-subtitle {
+    color: var(--text-secondary);
+    font-size: 16px;
+    margin-bottom: 40px;
+}
+
+.ds-category {
+    margin-bottom: 40px;
+}
+
+.ds-category-title {
+    font-family: 'Fira Code', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.ds-category-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border-subtle);
+}
+
+.ds-category-title.linear {
+    color: var(--accent);
+}
+
+.ds-category-title.tree-cat {
+    color: var(--purple);
+}
+
+.ds-category-title.graph-cat {
+    color: var(--cyan);
+}
+
+.ds-category-title.hash-cat {
+    color: var(--yellow);
+}
+
+.ds-exp-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+}
+
+.ds-exp-card {
+    padding: 24px;
+    border-radius: var(--radius-lg);
+    background: var(--bg-secondary);
+    border: 1px solid var(--glass-border);
+    transition: all 0.3s;
+}
+
+.ds-exp-card:hover {
+    border-color: var(--border-accent);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-glow);
+}
+
+.ds-exp-card h3 {
+    font-size: 16px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ds-exp-card .ds-desc {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 14px;
+}
+
+.complexity-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 14px;
+    font-family: 'Fira Code', monospace;
+    font-size: 11px;
+}
+
+.complexity-table th {
+    text-align: left;
+    padding: 4px 8px;
+    color: var(--text-muted);
+    font-weight: 500;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.complexity-table td {
+    padding: 4px 8px;
+    color: var(--text-secondary);
+}
+
+.complexity-table .good {
+    color: var(--green);
+}
+
+.complexity-table .avg {
+    color: var(--yellow);
+}
+
+.complexity-table .bad {
+    color: var(--red);
+}
+
+.try-btn {
+    font-family: 'Fira Code', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 6px 16px;
+    border-radius: 6px;
+    background: rgba(99, 102, 241, 0.1);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    color: var(--accent);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.try-btn:hover {
+    background: rgba(99, 102, 241, 0.2);
+    transform: translateY(-1px);
+}
+
+/* ── ABOUT PAGE ────────────────────────────────────────── */
+.about-page {
+    padding: 60px 24px 80px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.about-page h1 {
+    font-size: 36px;
+    margin-bottom: 16px;
+}
+
+.about-page p {
+    font-size: 16px;
+    color: var(--text-secondary);
+    line-height: 1.8;
+    margin-bottom: 20px;
+}
+
+.about-page h2 {
+    font-size: 22px;
+    margin: 36px 0 14px;
+}
+
+.about-targets {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.about-target {
+    padding: 16px;
+    border-radius: var(--radius-md);
+    background: var(--bg-secondary);
+    border: 1px solid var(--glass-border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+}
+
+.about-target .at-icon {
+    font-size: 22px;
+}
