@@ -6,6 +6,7 @@ import { renderHomePage, initHomeAnimations } from './pages/home.js';
 import { renderVisualizerPage, initVisualizer } from './pages/visualizer.js';
 import { renderExplorerPage, initExplorer } from './pages/explorer.js';
 import { renderAboutPage } from './pages/about.js';
+import { renderInteractivePage, initInteractive } from './pages/interactive.js';
 
 // ── Navbar ──
 function renderNavbar(activePage) {
@@ -18,12 +19,13 @@ function renderNavbar(activePage) {
     <div class="nav-links">
       <a href="#/" class="nav-link ${activePage === 'home' ? 'active' : ''}">Home</a>
       <a href="#/visualizer" class="nav-link ${activePage === 'visualizer' ? 'active' : ''}">Visualizer</a>
+      <a href="#/interactive" class="nav-link ${activePage === 'interactive' ? 'active' : ''}">Interactive</a>
       <a href="#/explorer" class="nav-link ${activePage === 'explorer' ? 'active' : ''}">Explorer</a>
       <a href="#/about" class="nav-link ${activePage === 'about' ? 'active' : ''}">About</a>
     </div>
     <div class="nav-right">
       <button class="theme-toggle" id="theme-toggle" title="Toggle theme">☀</button>
-      <a href="#/visualizer" class="nav-cta">Launch Lab</a>
+      <a href="#/interactive" class="nav-cta">Launch Lab</a>
     </div>
   </nav>`;
 }
@@ -81,6 +83,10 @@ function navigate() {
         page = 'explorer';
         app.innerHTML = renderNavbar('explorer') + renderExplorerPage();
         setTimeout(initExplorer, 50);
+    } else if (path === '/interactive') {
+        page = 'interactive';
+        app.innerHTML = renderNavbar('interactive') + renderInteractivePage();
+        setTimeout(initInteractive, 50);
     } else if (path === '/about') {
         page = 'about';
         app.innerHTML = renderNavbar('about') + renderAboutPage();

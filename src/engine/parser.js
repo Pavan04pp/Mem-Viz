@@ -417,18 +417,46 @@ export function parseCode(code, lang) {
         const mDel = line.match(/(\w+)\.(?:erase|remove|delete|Remove)\((.+?)\);?$/) ||
             (lang === 'python' && line.match(/^del\s+(\w+)\[(.+?)\]$/));
         if (mDel) { const m = st.maps.find(m => m.name === mDel[1]); if (m) { const key = evalExpr(mDel[2], vrs); m.entries = m.entries.filter(e => String(e.key) !== String(key)); addStep('MAP_DELETE', { name: m.name, key }, lineNum); } return; }
-    });
-    // Simple syntax error detection after processing all lines
-    lines.forEach((rawLine, li) => {
-        const line = rawLine.trim();
-        if (!line || line.startsWith('//') || line.startsWith('#') || line.startsWith('/*') || line.startsWith('*')) return;
-        const hasUnmatchedParen = (line.match(/\(/g) || []).length !== (line.match(/\)/g) || []).length;
-        const hasUnmatchedBrace = (line.match(/\{/g) || []).length !== (line.match(/\}/g) || []).length;
-        const likelyStatement = /[=;{}]/.test(line) || /function|def|class/.test(line);
-        if (hasUnmatchedParen || hasUnmatchedBrace || (!line.endsWith(';') && !line.endsWith('}') && !line.endsWith('{') && !likelyStatement)) {
-            st.errors.push({ line: li + 1, message: 'Syntax error or unsupported statement' });
+
+        // ── FUNCTION CALLS (track for call stack visualization) ──
+        const funcCall = line.match(/^(?:cout\s*<<|std::cout\s*<<|System\.out\.print|Console\.Write|print\s*\()/);
+        if (funcCall) {
+            addStep('IO_OUTPUT', { line: line.substring(0, 50) }, lineNum);
+            return;
+        }
+
+        // Recursive function call detection
+        const recursiveCall = line.match(/return\s+(\w+)\s*\([^)]*\)\s*(?:\+|\-|\*|\/)\s*(\w+)\s*\([^)]*\)/);
+        if (recursiveCall) {
+            addStep('RECURSIVE_CALL', { func: recursiveCall[1], line: line.substring(0, 60) }, lineNum);
+            return;
+        }
+
+        // Simple function call
+        const simpleCall = line.match(/^(\w+)\s*\([^)]*\)\s*;?$/);
+        if (simpleCall && !['if', 'for', 'while', 'switch'].includes(simpleCall[1])) {
+            addStep('FUNC_CALL', { name: simpleCall[1] }, lineNum);
+            return;
+        }
+
+        // For loop detection (track array iterations)
+        const forLoop = line.match(/^for\s*\(\s*(?:int\s+)?(\w+)\s*=\s*(\d+)\s*;\s*\w+\s*[<>=!]+\s*(\d+|\w+)/);
+        if (forLoop) {
+            addStep('LOOP_START', { var: forLoop[1], from: forLoop[2], to: forLoop[3] }, lineNum);
+            return;
+        }
+
+        // Array swap detection (for bubble sort etc)
+        const swapPattern = line.match(/(\w+)\s*=\s*(\w+)\[(\w+)\]\s*;?$/) ||
+            line.match(/(\w+)\[(\w+)\]\s*=\s*(\w+)\[(\w+)\s*\+\s*1\]\s*;?$/) ||
+            line.match(/(\w+)\[(\w+)\s*\+\s*1\]\s*=\s*(\w+)\s*;?$/);
+        if (swapPattern) {
+            addStep('ARRAY_ACCESS', { detail: line.trim() }, lineNum);
+            return;
         }
     });
+
+    // No false syntax errors - just return the state
     return st;
 }
 

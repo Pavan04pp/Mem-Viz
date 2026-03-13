@@ -124,9 +124,24 @@ function renderLinkedList(ll) {
     </div>`;
 }
 
-// ── Doubly Linked List ──
+// ── Doubly Linked List — Premium Visualization ──
 function renderDoublyLinkedList(dll) {
-    if (!dll.nodes.length) return '';
+    if (!dll.nodes.length) {
+        return `<div class="dll-viz-container">
+            <div class="dll-empty-state">
+                <div class="dll-ptr-label head-label">
+                    <span class="dll-ptr-name">head</span>
+                    <span class="dll-ptr-arrow">↓</span>
+                </div>
+                <div class="dll-null-box">NULL</div>
+                <div class="dll-ptr-label tail-label">
+                    <span class="dll-ptr-arrow">↑</span>
+                    <span class="dll-ptr-name">tail</span>
+                </div>
+            </div>
+        </div>`;
+    }
+    
     const ordered = [];
     const visited = new Set();
     let cur = dll.nodes.find(n => n.id === dll.head) || dll.nodes[0];
@@ -136,16 +151,36 @@ function renderDoublyLinkedList(dll) {
         cur = cur.next ? dll.nodes.find(n => n.id === cur.next) : null;
     }
     dll.nodes.forEach(n => { if (!visited.has(n.id)) ordered.push(n); });
-        return `<div class="ll-row">
-        <div class="ll-null">NULL ←</div>
-        ${ordered.map((node, i) => {
-                return `<div class="dll-node" data-node-id="${esc(node.id)}">
-                <div class="dll-prev">←</div>
-                <div class="dll-val">${esc(String(node.val))}</div>
-                <div class="dll-next">→</div>
-            </div>${i < ordered.length - 1 ? '<div class="dll-arrow">⇄</div>' : ''}`;
-        }).join('')}
-        <div class="ll-null">→ NULL</div>
+    
+    return `<div class="dll-viz-container">
+        <div class="dll-nodes-wrapper">
+            <div class="dll-null-cap left">NULL ←</div>
+            ${ordered.map((node, i) => {
+                const isFirst = i === 0;
+                const isLast = i === ordered.length - 1;
+                return `
+                <div class="dll-node-wrap">
+                    ${isFirst ? `<div class="dll-ptr-above"><span class="dll-ptr-name head">head</span><span class="dll-ptr-arrow down">↓</span></div>` : ''}
+                    <div class="dll-premium-node" data-node-id="${esc(node.id)}">
+                        <div class="dll-section dll-prev">
+                            <span class="dll-sec-label">PREV</span>
+                            <span class="dll-sec-val">${isFirst ? 'NULL' : '●'}</span>
+                        </div>
+                        <div class="dll-section dll-data">
+                            <span class="dll-data-val">${esc(String(node.val))}</span>
+                        </div>
+                        <div class="dll-section dll-next">
+                            <span class="dll-sec-label">NEXT</span>
+                            <span class="dll-sec-val">${isLast ? 'NULL' : '●'}</span>
+                        </div>
+                        <div class="dll-addr">${esc(node.addr || '0x' + (0x1000 + i * 16).toString(16).toUpperCase())}</div>
+                    </div>
+                    ${isLast ? `<div class="dll-ptr-below"><span class="dll-ptr-arrow up">↑</span><span class="dll-ptr-name tail">tail</span></div>` : ''}
+                </div>
+                ${!isLast ? '<div class="dll-connector">⇄</div>' : ''}`;
+            }).join('')}
+            <div class="dll-null-cap right">→ NULL</div>
+        </div>
     </div>`;
 }
 
@@ -422,6 +457,32 @@ export function renderState(state) {
     // Sets
     if (state.sets.length > 0) {
         html += zone('z-map', 'Set (Unique Elements)', state.sets.map(s => renderSet(s)).join(''));
+    }
+
+    // Execution Steps (show what's happening)
+    if (state.steps.length > 0) {
+        const recentSteps = state.steps.slice(-10); // last 10 steps
+        html += zone('z-steps', 'Execution Trace',
+            `<div class="steps-list">${recentSteps.map(s => {
+                let icon = '●', color = 'var(--text-muted)';
+                if (s.action === 'FUNC_ENTER') { icon = '▶'; color = 'var(--green)'; }
+                else if (s.action === 'FUNC_RETURN') { icon = '◀'; color = 'var(--yellow)'; }
+                else if (s.action === 'RECURSIVE_CALL') { icon = '↻'; color = 'var(--accent)'; }
+                else if (s.action === 'CREATE_VAR' || s.action === 'UPDATE_VAR') { icon = '◆'; color = 'var(--cyan)'; }
+                else if (s.action === 'CREATE_ARRAY' || s.action === 'UPDATE_ARRAY') { icon = '▤'; color = 'var(--orange)'; }
+                else if (s.action === 'LOOP_START') { icon = '↺'; color = 'var(--pink)'; }
+                else if (s.action === 'ARRAY_ACCESS') { icon = '⬡'; color = 'var(--yellow)'; }
+                else if (s.action === 'IO_OUTPUT') { icon = '⬢'; color = 'var(--green)'; }
+                let desc = s.action.replace(/_/g, ' ');
+                if (s.detail) {
+                    if (s.detail.name) desc += ': ' + s.detail.name;
+                    else if (s.detail.func) desc += ': ' + s.detail.func + '()';
+                    else if (s.detail.line) desc = s.detail.line;
+                    else if (s.detail.detail) desc = s.detail.detail;
+                }
+                return `<div class="step-item" style="color:${color}"><span class="step-icon">${icon}</span><span class="step-num">${s.step}.</span> Line ${s.line}: ${esc(desc)}</div>`;
+            }).join('')}</div>`
+        );
     }
 
     if (!html) {
